@@ -1,0 +1,34 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{89F7B8D5-9F85-4ADC-AF1B-668EC08EA97F}") = "imageGeneratorSample.AppHost", "imageGeneratorSample.AppHost\imageGeneratorSample.AppHost.csproj", "{B4C28D91-551A-4FE5-9E55-DDB683D522D5}"
+EndProject
+Project("{89F7B8D5-9F85-4ADC-AF1B-668EC08EA97F}") = "imageGeneratorSample.ServiceDefaults", "imageGeneratorSample.ServiceDefaults\imageGeneratorSample.ServiceDefaults.csproj", "{187761FA-E5BE-4A3E-A061-F074848A5059}"
+EndProject
+Project("{89F7B8D5-9F85-4ADC-AF1B-668EC08EA97F}") = "imageGeneratorSample.Web", "imageGeneratorSample.Web\imageGeneratorSample.Web.csproj", "{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B4C28D91-551A-4FE5-9E55-DDB683D522D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4C28D91-551A-4FE5-9E55-DDB683D522D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4C28D91-551A-4FE5-9E55-DDB683D522D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4C28D91-551A-4FE5-9E55-DDB683D522D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{187761FA-E5BE-4A3E-A061-F074848A5059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{187761FA-E5BE-4A3E-A061-F074848A5059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{187761FA-E5BE-4A3E-A061-F074848A5059}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{187761FA-E5BE-4A3E-A061-F074848A5059}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
