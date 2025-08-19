@@ -1,7 +1,8 @@
-using Microsoft.Extensions.AI;
 using imageGeneratorSample.Web.Components;
 using imageGeneratorSample.Web.Services;
 using imageGeneratorSample.Web.Services.Ingestion;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using OpenAI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +10,16 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 var openai = builder.AddOpenAIClient("openai");
-openai.AddChatClient("gpt-4o-mini")
+
+builder.Services.AddChatClient( services =>
+    {
+        var openAiClient = services.GetRequiredService<OpenAIClient>();
+    #pragma warning disable OPENAI001
+        var responsesClient = openAiClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
+    #pragma warning restore OPENAI001
+        var loggerFactory = services.GetService<ILoggerFactory>();
+        return new OpenTelemetryChatClient(responsesClient, loggerFactory?.CreateLogger(typeof(OpenTelemetryChatClient)));
+    })
     .UseFunctionInvocation()
     .UseOpenTelemetry(configure: c =>
         c.EnableSensitiveData = builder.Environment.IsDevelopment());

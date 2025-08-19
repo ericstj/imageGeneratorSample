@@ -62,12 +62,18 @@
         chatSuggestions?.Clear();
         await chatInput!.FocusAsync();
 
+
+        var chatMessages = chatOptions.ConversationId is null
+            ? messages
+            : [userMessage];
+
         // Stream and display a new response from the IChatClient
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var update in ChatClient.GetStreamingResponseAsync([.. messages], chatOptions, currentResponseCancellation.Token))
+        await foreach (var update in ChatClient.GetStreamingResponseAsync(chatMessages, chatOptions, currentResponseCancellation.Token))
         {
+            chatOptions.ConversationId = update.ConversationId;
             messages.AddMessages(update, filter: c => c is not TextContent);
             responseText.Text += update.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
