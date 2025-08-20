@@ -5,13 +5,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>ef8a7a7c-ef42-4aa4-a7cf-df49377ed3b3</UserSecretsId>
+    <ExtensionsAIVersion>9.9.0-ericstj25081902</ExtensionsAIVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" Version="2.3.0-beta.1" />
     <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="9.4.0-preview.1.25378.8" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.9.0-preview.1.25419.1" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="9.9.0-preview.1.25419.1" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="$(ExtensionsAIVersion)" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="$(ExtensionsAIVersion)" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.61.0" />
     <PackageReference Include="PdfPig" Version="0.1.10" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />

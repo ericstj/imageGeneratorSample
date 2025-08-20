@@ -1,8 +1,13 @@
 ﻿@page "/"
 @using System.ComponentModel
+@using System.Runtime.InteropServices
+@using System.Text.RegularExpressions
+@using System.Drawing
+@using imageGeneratorSample.Web.Services.Images
 @inject IChatClient ChatClient
 @inject NavigationManager Nav
 @inject SemanticSearch Search
+@inject IImageCacheService ImageCache
 @implements IDisposable
 
 <PageTitle>Chat</PageTitle>
@@ -28,6 +33,9 @@
         You are an assistant who answers questions about information you retrieve.
         Do not answer questions about anything else.
         Use only simple markdown to format your responses.
+        
+        When sharing images use image links in the following format: ![image description](image-url).  
+        If the image is generated then the image-url should be the ImageId of the generated image.
 
         Use the search tool to find relevant information. When you do this, end your
         reply with citations in the special XML format:
@@ -50,7 +58,19 @@
     protected override void OnInitialized()
     {
         messages.Add(new(ChatRole.System, SystemPrompt));
-        chatOptions.Tools = [AIFunctionFactory.Create(SearchAsync)];
+        chatOptions.Tools = 
+        [
+            AIFunctionFactory.Create(SearchAsync),
+            #pragma warning disable MEAI001 // Type is for evaluation purposes only
+            new ImageGenerationTool(new ImageGenerationOptions()
+            {
+                ModelId = "gpt-image-01",
+                RawRepresentationFactory = _ => new Dictionary<string, object>()
+                {
+                    ["partial_images"] = 2
+                }
+            })
+        ];
     }
 
     private async Task AddUserMessageAsync(ChatMessage userMessage)
@@ -74,6 +94,7 @@
         await foreach (var update in ChatClient.GetStreamingResponseAsync(chatMessages, chatOptions, currentResponseCancellation.Token))
         {
             chatOptions.ConversationId = update.ConversationId;
+            await CacheImages(update);
             messages.AddMessages(update, filter: c => c is not TextContent);
             responseText.Text += update.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
@@ -83,6 +104,54 @@
         messages.Add(currentResponseMessage!);
         currentResponseMessage = null;
         chatSuggestions?.Update(messages);
+    }
+
+    private async Task CacheImages(ChatResponseUpdate update)
+    {
+        Queue<(string uri, string? fileName)> cachedUris = new();
+        for (int i = 0; i < update.Contents.Count; i++)
+        {
+            var content = update.Contents[i];
+            if (content is not DataContent dataContent)
+            {
+                continue;
+            }
+
+            string? fileName = null;
+            _ = dataContent.AdditionalProperties?.TryGetValue("ItemId", out fileName);
+
+            var bytes = MemoryMarshal.TryGetArray(dataContent.Data, out var segment)
+                ? segment.Array!
+                : dataContent.Data.ToArray();
+
+            var cacheUri = await ImageCache.CacheImageAsync(bytes, dataContent.MediaType, fileName);
+
+            cachedUris.Enqueue((Nav.ToAbsoluteUri(cacheUri).ToString(), fileName));
+
+            update.Contents.RemoveAt(i--);
+        }
+
+        foreach (var textContent in update.Contents.OfType<TextContent>())
+        {
+            // Find each image link in the text content and replace it with the cached URI
+            // Use a regex to find image links in the format ![description](url)
+            // Replace each in order of appearance
+            textContent.Text = Regex.Replace(textContent.Text,
+                @"!\[([^\]]*)\]\(([^)]+)\)",
+                match =>
+                {
+                    var cachedUri = cachedUris.Dequeue();
+                    return $"![{match.Groups[1].Value}]({cachedUri.uri})";
+                });
+        }
+
+        // if we have any images remaining, just add them as TextContent markdown links
+        while (cachedUris.Count > 0)
+        {
+            var imageUri = cachedUris.Dequeue();            
+
+            update.Contents.Add(new TextContent($"![{imageUri.fileName ?? "image"}]({imageUri.uri})\n"));
+        }
     }
 
     private void CancelAnyCurrentResponse()

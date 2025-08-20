@@ -1,5 +1,6 @@
 using imageGeneratorSample.Web.Components;
 using imageGeneratorSample.Web.Services;
+using imageGeneratorSample.Web.Services.Images;
 using imageGeneratorSample.Web.Services.Ingestion;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ using OpenAI;
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddControllers();
 
 var openai = builder.AddOpenAIClient("openai");
 
@@ -31,10 +33,13 @@ builder.Services.AddSqliteCollection<string, IngestedChunk>("data-imagegenerator
 builder.Services.AddSqliteCollection<string, IngestedDocument>("data-imagegeneratorsample-documents", vectorStoreConnectionString);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
+builder.Services.AddSingleton<IImageCacheService, ImageCacheService>();
+builder.Services.AddHostedService<ImageCacheBackgroundService>();
 
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
+app.MapControllers();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
