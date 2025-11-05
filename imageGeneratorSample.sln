@@ -1,21 +1,23 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.10830.194 main
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{89F7B8D5-9F85-4ADC-AF1B-668EC08EA97F}") = "imageGeneratorSample.AppHost", "imageGeneratorSample.AppHost\imageGeneratorSample.AppHost.csproj", "{B4C28D91-551A-4FE5-9E55-DDB683D522D5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "imageGeneratorSample.AppHost", "imageGeneratorSample.AppHost\imageGeneratorSample.AppHost.csproj", "{B4C28D91-551A-4FE5-9E55-DDB683D522D5}"
 EndProject
-Project("{89F7B8D5-9F85-4ADC-AF1B-668EC08EA97F}") = "imageGeneratorSample.ServiceDefaults", "imageGeneratorSample.ServiceDefaults\imageGeneratorSample.ServiceDefaults.csproj", "{187761FA-E5BE-4A3E-A061-F074848A5059}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "imageGeneratorSample.ServiceDefaults", "imageGeneratorSample.ServiceDefaults\imageGeneratorSample.ServiceDefaults.csproj", "{187761FA-E5BE-4A3E-A061-F074848A5059}"
 EndProject
-Project("{89F7B8D5-9F85-4ADC-AF1B-668EC08EA97F}") = "imageGeneratorSample.Web", "imageGeneratorSample.Web\imageGeneratorSample.Web.csproj", "{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "imageGeneratorSample.Web", "imageGeneratorSample.Web\imageGeneratorSample.Web.csproj", "{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.AI", "..\..\dotnet\extensions\src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj", "{B73C0082-DDBE-B4E3-B349-BFEE69A6E7F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.AI.Abstractions", "..\..\dotnet\extensions\src\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj", "{42ADEC28-E1E3-70F0-6B11-20104896036D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.AI.OpenAI", "..\..\dotnet\extensions\src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj", "{3ECB229B-7304-5E13-A842-9C36D35A3CD8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B4C28D91-551A-4FE5-9E55-DDB683D522D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -30,5 +32,23 @@ Global
 		{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAF54073-E6BD-4DBD-9D94-A92DEE41FD33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B73C0082-DDBE-B4E3-B349-BFEE69A6E7F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B73C0082-DDBE-B4E3-B349-BFEE69A6E7F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B73C0082-DDBE-B4E3-B349-BFEE69A6E7F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B73C0082-DDBE-B4E3-B349-BFEE69A6E7F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42ADEC28-E1E3-70F0-6B11-20104896036D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42ADEC28-E1E3-70F0-6B11-20104896036D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42ADEC28-E1E3-70F0-6B11-20104896036D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42ADEC28-E1E3-70F0-6B11-20104896036D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ECB229B-7304-5E13-A842-9C36D35A3CD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ECB229B-7304-5E13-A842-9C36D35A3CD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ECB229B-7304-5E13-A842-9C36D35A3CD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ECB229B-7304-5E13-A842-9C36D35A3CD8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {95AD3DC2-AA56-42EB-8A57-F12709CE8B12}
 	EndGlobalSection
 EndGlobal
