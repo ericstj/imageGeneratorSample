@@ -3,6 +3,7 @@
 @using System.Runtime.InteropServices
 @using System.Text.RegularExpressions
 @using System.Drawing
+@using Microsoft.Extensions.AI
 @using imageGeneratorSample.Web.Services.Images
 @inject IChatClient ChatClient
 @inject NavigationManager Nav
@@ -14,7 +15,7 @@
 
 <ChatHeader OnNewChat="@ResetConversationAsync" />
 
-<ChatMessageList Messages="@messages" InProgressMessage="@currentResponseMessage">
+<ChatMessageList Messages="@messages" InProgressMessage="@currentResponseMessage" >
     <NoMessagesContent>
         <div>To get started, try asking about these example documents. You can replace these with your own data and replace this message.</div>
         <ChatCitation File="Example_Emergency_Survival_Kit.pdf"/>
@@ -33,9 +34,6 @@
         You are an assistant who answers questions about information you retrieve.
         Do not answer questions about anything else.
         Use only simple markdown to format your responses.
-        
-        When sharing images use image links in the following format: ![image description](image-url).  
-        If the image is generated then the image-url should be the ImageId of the generated image.
 
         Use the search tool to find relevant information. When you do this, end your
         reply with citations in the special XML format:
@@ -62,14 +60,14 @@
         [
             AIFunctionFactory.Create(SearchAsync),
             #pragma warning disable MEAI001 // Type is for evaluation purposes only
-            new ImageGenerationTool(new ImageGenerationOptions()
+            new HostedImageGenerationTool()
             {
-                ModelId = "gpt-image-01",
-                RawRepresentationFactory = _ => new Dictionary<string, object>()
+                Options = new()
                 {
-                    ["partial_images"] = 2
+                    ModelId = "gpt-image-1",
+                    StreamingCount = 3
                 }
-            })
+            }
         ];
     }
 
@@ -90,15 +88,20 @@
         // Stream and display a new response from the IChatClient
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
+
+        // initialize the new currentResponseMessage
+        await InvokeAsync(StateHasChanged);
+
         currentResponseCancellation = new();
         await foreach (var update in ChatClient.GetStreamingResponseAsync(chatMessages, chatOptions, currentResponseCancellation.Token))
         {
             chatOptions.ConversationId = update.ConversationId;
-            await CacheImages(update);
             messages.AddMessages(update, filter: c => c is not TextContent);
+            await CacheImages(update.Contents, responseText);
             responseText.Text += update.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
+
 
         // Store the final response in the conversation, and begin getting suggestions
         messages.Add(currentResponseMessage!);
@@ -106,51 +109,62 @@
         chatSuggestions?.Update(messages);
     }
 
-    private async Task CacheImages(ChatResponseUpdate update)
+    private async Task CacheImages(IList<AIContent> contents, TextContent textContent)
     {
-        Queue<(string uri, string? fileName)> cachedUris = new();
-        for (int i = 0; i < update.Contents.Count; i++)
+        Dictionary<string, string> cachedUris = new();
+        for (int i = 0; i < contents.Count; i++)
         {
-            var content = update.Contents[i];
-            if (content is not DataContent dataContent)
+            var content = contents[i];
+            if (content is not ImageGenerationToolResultContent imageResult)
             {
                 continue;
             }
 
-            string? fileName = null;
-            _ = dataContent.AdditionalProperties?.TryGetValue("ItemId", out fileName);
+            contents.RemoveAt(i--);
 
-            var bytes = MemoryMarshal.TryGetArray(dataContent.Data, out var segment)
-                ? segment.Array!
-                : dataContent.Data.ToArray();
-
-            var cacheUri = await ImageCache.CacheImageAsync(bytes, dataContent.MediaType, fileName);
-
-            cachedUris.Enqueue((Nav.ToAbsoluteUri(cacheUri).ToString(), fileName));
-
-            update.Contents.RemoveAt(i--);
-        }
-
-        foreach (var textContent in update.Contents.OfType<TextContent>())
-        {
-            // Find each image link in the text content and replace it with the cached URI
-            // Use a regex to find image links in the format ![description](url)
-            // Replace each in order of appearance
-            textContent.Text = Regex.Replace(textContent.Text,
-                @"!\[([^\]]*)\]\(([^)]+)\)",
-                match =>
+            foreach (var dataContent in imageResult.Outputs?. OfType<DataContent>() ?? Array.Empty<DataContent>())
+            {
+                string? fileName = dataContent.Name;
+                fileName ??= imageResult.ImageId;
+                if (String.IsNullOrEmpty(fileName))
                 {
-                    var cachedUri = cachedUris.Dequeue();
-                    return $"![{match.Groups[1].Value}]({cachedUri.uri})";
-                });
+                    _ = dataContent.AdditionalProperties?.TryGetValue("ItemId", out fileName);
+                }
+                fileName ??= $"image_{Guid.NewGuid()}.png";                
+
+                var bytes = MemoryMarshal.TryGetArray(dataContent.Data, out var segment)
+                    ? segment.Array!
+                    : dataContent.Data.ToArray();
+
+                var cacheUri = await ImageCache.CacheImageAsync(bytes, dataContent.MediaType, fileName);
+
+                cachedUris[fileName] = Nav.ToAbsoluteUri(cacheUri).ToString();
+            }
         }
 
-        // if we have any images remaining, just add them as TextContent markdown links
+        // Find each image link in the text content and replace it with the cached URI
+        // Use a regex to find image links in the format ![description](url)
+        // Replace each in order of appearance
+        textContent.Text = Regex.Replace(textContent.Text,
+            @"!\[([^\]]*)\]\(([^)]+)\)",
+            match =>
+            {
+                var fileName = match.Groups[1].Value;
+                if (!cachedUris.TryGetValue(fileName, out var uri))
+                {
+                    return match.Value; // no cached URI found, return original
+                }
+                cachedUris.Remove(fileName);
+                return $"![{fileName}]({uri})";
+            });
+
+        // if we have any images remaining, just add them to the end
         while (cachedUris.Count > 0)
         {
-            var imageUri = cachedUris.Dequeue();            
+            var imageUri = cachedUris.First();
+            cachedUris.Remove(imageUri.Key);
 
-            update.Contents.Add(new TextContent($"![{imageUri.fileName ?? "image"}]({imageUri.uri})\n"));
+            textContent.Text += $"![{imageUri.Key}]({imageUri.Value})\n";
         }
     }
 
